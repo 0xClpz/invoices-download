@@ -1,0 +1,60 @@
+{
+  "name": "velocity-fleet",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/velocity-fleet/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/velocity-fleet",
+        "main": "apps/velocity-fleet/src/main.ts",
+        "tsConfig": "apps/velocity-fleet/tsconfig.app.json",
+        "assets": ["apps/velocity-fleet/src/assets"]
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false,
+          "fileReplacements": [
+            {
+              "replace": "apps/velocity-fleet/src/environments/environment.ts",
+              "with": "apps/velocity-fleet/src/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/js:node",
+      "options": {
+        "buildTarget": "velocity-fleet:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "velocity-fleet:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/velocity-fleet/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/velocity-fleet"],
+      "options": {
+        "jestConfig": "apps/velocity-fleet/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
