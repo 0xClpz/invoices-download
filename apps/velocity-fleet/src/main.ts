@@ -32,7 +32,11 @@ const client = wrapper(
   axios.create({ jar, baseURL: 'https://www.velocityfleet.com' })
 );
 
-const getToken = async (): Promise<string> => {
+const extractVariable = ({name, html}: {name: string, html: string}) => {
+  return html.split(`${name}: "`)[1].split('"')[0]
+}
+
+const getToken = async (): Promise<{token: string, customerId: number}> => {
   const { data: loginHtml } = await client.get(`/accounts/login/`);
   const $ = load(loginHtml);
   const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
@@ -50,15 +54,18 @@ const getToken = async (): Promise<string> => {
   });
 
   const { data: invoicesPageData } = await client.get(`/app/invoices/`);
-  return invoicesPageData.split('API_TOKEN: "')[1].split('"')[0];
+  const token = extractVariable({name: 'API_TOKEN', html: invoicesPageData})
+  const customerId = extractVariable({name: 'MASTER_CUSTOMER_ID', html: invoicesPageData})
+
+  return {token, customerId: Number(customerId)}
 };
 
-const getInvoices = async (token: string): Promise<InvoicesList> => {
+const getInvoices = async ({token, customerId}: {token: string, customerId: number}): Promise<InvoicesList> => {
   const { data: invoices } = await client.get<InvoicesList>(
     '/vapi/v1/customers/invoices/',
     {
       params: {
-        customer__master_customers: 1350486,
+        customer__master_customers: customerId,
         customer__products: 1,
       },
       headers: {
